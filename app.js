@@ -9,13 +9,22 @@ const PORT = 3001;
 app.use(cors());
 
 
-app.get('/weather', (req, res)=>{
+app.get('/firstQuestion', (req, res)=>{
     const temperatureData = {
         temperature: 74
       };
    
       // Send the JSON object as the response
       res.json(temperatureData);
+});
+
+app.get('/followUp', (req, res)=>{
+  const temperatureData = {
+      temperature: 74
+    };
+ 
+    // Send the JSON object as the response
+    res.json(temperatureData);
 });
 
 
