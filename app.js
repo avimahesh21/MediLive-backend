@@ -1,5 +1,6 @@
 const express = require('express');
 var cors = require('cors')
+require('dotenv').config({path: './env'});
 const { OpenAI } = require('openai');
 
 const app = express();
@@ -9,11 +10,11 @@ app.use(cors());
 app.use(express.json())
 
 const openai = new OpenAI({
-  apiKey: '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',
+  apiKey: process.env.OPENAI_KEY
 });
 
-const accountSid = "AC54dd9b903403caed017028b46cf4978a";
-const authToken = "4ada940d0bd950ee847f300a9ab573ad";
+const accountSid = process.env.ACCOUNTSID_KEY;
+const authToken = process.env.AUTHTOKEN_KEY;
 
 const client = require('twilio')(accountSid, authToken);
 
