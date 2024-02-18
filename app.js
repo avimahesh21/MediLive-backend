@@ -12,10 +12,15 @@ const openai = new OpenAI({
   apiKey: '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',
 });
 
+const accountSid = "AC54dd9b903403caed017028b46cf4978a";
+const authToken = "4ada940d0bd950ee847f300a9ab573ad";
+
+const client = require('twilio')(accountSid, authToken);
+
 app.post('/firstQuestion', async (req, res) => {
   //get openai first question
   const response = await openai.chat.completions.create({
-    model: "gpt-3.5-turbo-0125",
+    model: "gpt-4-0125-preview",
     messages: [
       {
         role: "system",
@@ -53,7 +58,7 @@ app.post('/firstQuestion', async (req, res) => {
 app.post('/followUp', async (req, res) => {
   //get openai follow up
   const response = await openai.chat.completions.create({
-    model: "gpt-3.5-turbo-0125",
+    model: "gpt-4-0125-preview",
     messages: [
       {
         role: "system",
@@ -85,6 +90,25 @@ app.post('/followUp', async (req, res) => {
     buffer: buffer
   };
   res.json(questionData);
+});
+
+app.post('/send-message', (req, res) => {
+  const { message} = req.body; // Extract message and recipient from request body
+
+  client.messages
+    .create({
+      body: message, // Use the message from the request
+      from: '+18447020832', // Your Twilio number
+      to: '+19734208233' // The recipient's number from the request
+    })
+    .then(message => {
+      console.log(message.sid);
+      res.status(200).send({ message: 'Message sent successfully.', sid: message.sid });
+    })
+    .catch(error => {
+      console.error(error);
+      res.status(500).send({ message: 'Failed to send the message.', error: error });
+    });
 });
 
 // Listen to Arduino serial port
@@ -124,14 +148,12 @@ port.on('open', function() {
 // Read data that is available but keep the stream in "paused mode"
 port.on('readable', function () {
   const data = port.read().toString();
-  console.log(data);
   wss.broadcast(data);
 })
 
 // Switches the port into "flowing mode"
 port.on('data', function (data) {
   const readableData = data.toString();
-  console.log('Data:', readableData);
   // Broadcast data to all connected WebSocket clients
   wss.broadcast(readableData);
 })
