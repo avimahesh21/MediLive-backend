@@ -14,7 +14,6 @@ const openai = new OpenAI({
 
 app.post('/firstQuestion', async (req, res) => {
   //get openai first question
-  /*
   const response = await openai.chat.completions.create({
     model: "gpt-3.5-turbo-0125",
     messages: [
@@ -81,10 +80,9 @@ app.post('/followUp', async (req, res) => {
     input: obj,
   });
   const buffer = Buffer.from(await mp3.arrayBuffer());
-*/
   const questionData = {
-    question: "hiskdksandksndks andksandksnalkdnsalkndlks andlksandlksandksndlknalkdnsalkndlksa ndlksandsandlknsalkdnsalk dnsalkdnlksandlksandsndlkns",
-    buffer: "todo"
+    question: obj,
+    buffer: buffer
   };
   res.json(questionData);
 });
@@ -104,7 +102,7 @@ wss.broadcast = function broadcast(data) {
 
 const { SerialPort } = require('serialport')
 const port = new SerialPort({
-  path: '/COM3',
+  path: '/COM4',
   baudRate: 9600,
   autoOpen: false,
 })
