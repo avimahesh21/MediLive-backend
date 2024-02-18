@@ -5,11 +5,6 @@ const { OpenAI } = require('openai');
 const app = express();
 const PORT = 3001;
 
-const accountSid = "AC54dd9b903403caed017028b46cf4978a";
-const authToken = "4ada940d0bd950ee847f300a9ab573ad";
-
-
-const client = require('twilio')(accountSid, authToken);
 app.use(cors());
 app.use(express.json())
 
@@ -19,7 +14,6 @@ const openai = new OpenAI({
 
 app.post('/firstQuestion', async (req, res) => {
   //get openai first question
-  
   const response = await openai.chat.completions.create({
     model: "gpt-3.5-turbo-0125",
     messages: [
@@ -86,7 +80,6 @@ app.post('/followUp', async (req, res) => {
     input: obj,
   });
   const buffer = Buffer.from(await mp3.arrayBuffer());
-
   const questionData = {
     question: obj,
     buffer: buffer
@@ -94,32 +87,63 @@ app.post('/followUp', async (req, res) => {
   res.json(questionData);
 });
 
+// Listen to Arduino serial port
+const WebSocket = require('ws');
+const wss = new WebSocket.Server({ port: 8080 }); // Use a different port for WS
 
+// Broadcast to all clients
+wss.broadcast = function broadcast(data) {
+  wss.clients.forEach(function each(client) {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(data);
+    }
+  });
+};
 
+const { SerialPort } = require('serialport')
+const port = new SerialPort({
+  path: '/COM4',
+  baudRate: 9600,
+  autoOpen: false,
+})
 
-app.post('/send-message', (req, res) => {
-  const { message} = req.body; // Extract message and recipient from request body
+port.open(function (err) {
+  if (err) {
+    return console.log('Error opening port: ', err.message)
+  }
 
-  client.messages
-    .create({
-      body: message, // Use the message from the request
-      from: '+18447020832', // Your Twilio number
-      to: '+19734208233' // The recipient's number from the request
-    })
-    .then(message => {
-      console.log(message.sid);
-      res.status(200).send({ message: 'Message sent successfully.', sid: message.sid });
-    })
-    .catch(error => {
-      console.error(error);
-      res.status(500).send({ message: 'Failed to send the message.', error: error });
-    });
+  // Because there's no callback to write, write errors will be emitted on the port:
+  port.write('main screen turn on')
+})
+
+// The open event is always emitted
+port.on('open', function() {
+  // open logic
 });
+
+// Read data that is available but keep the stream in "paused mode"
+port.on('readable', function () {
+  const data = port.read().toString();
+  console.log(data);
+  wss.broadcast(data);
+})
+
+// Switches the port into "flowing mode"
+port.on('data', function (data) {
+  const readableData = data.toString();
+  console.log('Data:', readableData);
+  // Broadcast data to all connected WebSocket clients
+  wss.broadcast(readableData);
+})
+
+// Open errors will be emitted as an error event
+port.on('error', function(err) {
+  console.log('Error: ', err.message)
+})
 
 app.listen(PORT, (error) => {
   if (!error)
     console.log("Server is Successfully Running, and App is listening on port " + PORT)
   else
     console.log("Error occurred, server can't start", error);
-}
-);
+  });
