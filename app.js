@@ -14,7 +14,7 @@ const openai = new OpenAI({
 
 app.post('/firstQuestion', async (req, res) => {
   //get openai first question
-  /*
+  
   const response = await openai.chat.completions.create({
     model: "gpt-3.5-turbo-0125",
     messages: [
@@ -81,14 +81,35 @@ app.post('/followUp', async (req, res) => {
     input: obj,
   });
   const buffer = Buffer.from(await mp3.arrayBuffer());
-*/
+
   const questionData = {
-    question: "hiskdksandksndks andksandksnalkdnsalkndlks andlksandlksandksndlknalkdnsalkndlksa ndlksandsandlknsalkdnsalk dnsalkdnlksandlksandsndlkns",
-    buffer: "todo"
+    question: obj,
+    buffer: buffer
   };
   res.json(questionData);
 });
 
+
+
+
+app.post('/send-message', (req, res) => {
+  const { message} = req.body; // Extract message and recipient from request body
+
+  client.messages
+    .create({
+      body: message, // Use the message from the request
+      from: '+18447020832', // Your Twilio number
+      to: '+19734208233' // The recipient's number from the request
+    })
+    .then(message => {
+      console.log(message.sid);
+      res.status(200).send({ message: 'Message sent successfully.', sid: message.sid });
+    })
+    .catch(error => {
+      console.error(error);
+      res.status(500).send({ message: 'Failed to send the message.', error: error });
+    });
+});
 
 app.listen(PORT, (error) => {
   if (!error)
