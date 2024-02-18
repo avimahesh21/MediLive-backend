@@ -5,6 +5,11 @@ const { OpenAI } = require('openai');
 const app = express();
 const PORT = 3001;
 
+const accountSid = "AC54dd9b903403caed017028b46cf4978a";
+const authToken = "4ada940d0bd950ee847f300a9ab573ad";
+
+
+const client = require('twilio')(accountSid, authToken);
 app.use(cors());
 app.use(express.json())
 
