@@ -14,8 +14,9 @@ const openai = new OpenAI({
 
 app.post('/firstQuestion', async (req, res) => {
   //get openai first question
+  /*
   const response = await openai.chat.completions.create({
-    model: "gpt-3.5-turbo-16k",
+    model: "gpt-3.5-turbo-0125",
     messages: [
       {
         role: "system",
@@ -53,7 +54,7 @@ app.post('/firstQuestion', async (req, res) => {
 app.post('/followUp', async (req, res) => {
   //get openai follow up
   const response = await openai.chat.completions.create({
-    model: "gpt-3.5-turbo-16k",
+    model: "gpt-3.5-turbo-0125",
     messages: [
       {
         role: "system",
@@ -80,10 +81,10 @@ app.post('/followUp', async (req, res) => {
     input: obj,
   });
   const buffer = Buffer.from(await mp3.arrayBuffer());
-
+*/
   const questionData = {
-    question: obj,
-    buffer: buffer
+    question: "hiskdksandksndks andksandksnalkdnsalkndlks andlksandlksandksndlknalkdnsalkndlksa ndlksandsandlknsalkdnsalk dnsalkdnlksandlksandsndlkns",
+    buffer: "todo"
   };
   res.json(questionData);
 });
