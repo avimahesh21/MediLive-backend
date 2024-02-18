@@ -89,11 +89,63 @@ app.post('/followUp', async (req, res) => {
   res.json(questionData);
 });
 
+// Listen to Arduino serial port
+const WebSocket = require('ws');
+const wss = new WebSocket.Server({ port: 8080 }); // Use a different port for WS
+
+// Broadcast to all clients
+wss.broadcast = function broadcast(data) {
+  wss.clients.forEach(function each(client) {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(data);
+    }
+  });
+};
+
+const { SerialPort } = require('serialport')
+const port = new SerialPort({
+  path: '/COM3',
+  baudRate: 9600,
+  autoOpen: false,
+})
+
+port.open(function (err) {
+  if (err) {
+    return console.log('Error opening port: ', err.message)
+  }
+
+  // Because there's no callback to write, write errors will be emitted on the port:
+  port.write('main screen turn on')
+})
+
+// The open event is always emitted
+port.on('open', function() {
+  // open logic
+});
+
+// Read data that is available but keep the stream in "paused mode"
+port.on('readable', function () {
+  const data = port.read().toString();
+  console.log(data);
+  wss.broadcast(data);
+})
+
+// Switches the port into "flowing mode"
+port.on('data', function (data) {
+  const readableData = data.toString();
+  console.log('Data:', readableData);
+  // Broadcast data to all connected WebSocket clients
+  wss.broadcast(readableData);
+})
+
+// Open errors will be emitted as an error event
+port.on('error', function(err) {
+  console.log('Error: ', err.message)
+})
 
 app.listen(PORT, (error) => {
   if (!error)
     console.log("Server is Successfully Running, and App is listening on port " + PORT)
   else
     console.log("Error occurred, server can't start", error);
-}
-);
+  });
